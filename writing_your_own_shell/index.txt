@@ -1,0 +1,506 @@
+# A fun walkthrough on how I wrote my own fshell (fsh)
+
+Hello, random reader from the internet. 
+
+
+
+## But what is a computer shell?
+
+"An operating system shell is a computer program that provides relatively broad and direct access to the system on which it runs. The term shell refers to how it is a relatively thin layer around an operating system." - Our most trustworthy source of information (wikipedia) 
+Think of the computer shell as thin layer which take the users command, and 
+
+
+## Writing a shell in C (FLokshi's Shell)
+
+/*This project was made using the following blog: https://brennan.io/2015/01/16/write-a-shell-in-c/ - Thank to the blog post, made me learn a lot of new concepts :)*/
+
+
+I remember a week ago reading about processes, and came accross the concept of `fork()`,`exec()` and `wait()`. Doing some random scripts, I thought to myselfwait, so if we can invoke processes within other process, using the `fork()` system call in UNIX, then that must be the core idea behind how the shells works.
+
+*Note: I am toking about the OS shell, not the shell that we eat :>*
+
+Cool, so the shell isn't anything else than a program which allows us to interact with the operating system. (in a sence)
+
+The idea around the shell seems intimedated, and I am not going to lie to you, I also thought of them as hard. Because if you think about it, anything aroundthe computer, especially low-level stuff seems scary, but at the same time amaizing. But fear you not, the whole idea behind the shell can be summarized in simple parts.  
+
+1. Configuration Files
+2. Interpreting
+3. Exit and free up  extra memory (because in the end, there is a global crises about the RAM shortage, so better be save)
+
+### Configuration Files
+
+A configuration file (often called a config file) is a text file that defines how a software program, system service, or application should behave.
+Instead of hardcoding settings inside the program, developers use config files so the user or administrator can easily change parameters without touching thecode.
+Configuration files control things like:
+
+1. User preferences (themes, keyboard shortcuts, default behaviors)
+2. System settings (network configurations, hardware settings)
+3. Application behavior (startup options, feature toggles)
+4. Environment variables and paths
+
+An example in LInux would be:`/etc/ssh/sshd_config` - the configuration file for the ssh protocol. Try it out it has some really pretty cool stuff to it. 
+
+### Interpreter
+I remeber my professor in university asking us which is the different between a interpreted programing language, and half of us sucked really bad to the question, I didn't :)
+
+An intepreted language such as in the case of  javascript, the interpreter read the sourcecode and interpret it line by line. A compiled language on the other hand such as our amaizing language C, the compiler (the GNU C compiler, gcc or any other compilers whatsoever) would first transform the .c program to an object file, rather than reading it line by line. 
+
+Just for notice the flow of how a C program is compiled is as follows
+```
+.c file -> (preprocessor) .i file ->compiler .s file ->  (assambler) .o/.obj file -> (linker)  .o/.obj file
+
+```
+So the way how our shell works is that of an interpreter where it reads every line that the user enter. 
+Now I want also to emphesis the following, which was pretty cool, and I highly recommend the read as the following:
+
+```
+By default your terminal(shell) starts in **canonical** mode, also called **cooked mode** (chat we are cooked). In this mode, keyboard input is only sent to your program when the user presses `Enter`.This is useful for many programs: it lets the user type in a line of text, use Backspace to fix errors until they get their input exactly the way they want it, and finally press Enter to send it to the program.This is the mode that we will be using. 
+The other mode is also very familiar to us. You know when we try to do something that  requires root priveledges, the password, that we can't see. That is because we are operating in **raw mode**. Here the key inputs are being reviced by the program as they are being typed.  
+```
+/*So the next time somebody asked if you are cooked, tell them I ain't but my (terminal is) :). You got the joke right, right?*/
+
+
+### Exit and free the memory that we accquire
+
+Since we are apperantly in a RAM shortage, making buying a computer today feel like paying an arm and a leg, it is important for us to use our memory safetly
+The memory in C doesn't forgive and that it is why we have to be really cautios when using it. 
+
+Memory that is accquired shouldn't be keept occupied if not used. C isn't consider a memory safe language, meaning if not careful we can have memory leaks, which will bring us to potential lost of data.
+ 
+
+## Getting our hands dirty
+
+The following is the full code, of our overly simplified shell code.
+/*Notice: The code is reproduced from the following blog: https://brennan.io/2015/01/16/write-a-shell-in-c/. Here is my simplification, and how I using the tutorial, adapted to my likings*/ 
+
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wait.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+#define FSH_READ_BUFFER 1024 
+#define FSH_BUFF_TOKEN 64
+#define FSH_DELIMETER " \t\n\r\a" 
+
+int fsh_cd(char **args);
+int fsh_help(char **args);
+int fsh_exit(char **args);
+
+
+char* read_line();
+char** parser();
+int launch(char** args);
+
+void fsh_loop();
+
+
+char *builtin_str[] = {
+  "cd",
+  "help",
+  "exit"
+};
+
+
+int (*builtin_func[]) (char **) = {
+  &fsh_cd,
+  &fsh_help,
+  &fsh_exit
+};
+
+int fsh_num_builtins() {
+  return sizeof(builtin_str) / sizeof(char *);
+}
+
+
+int fsh_cd(char **args)
+{
+  if (args[1] == NULL) {
+    fprintf(stderr, "fsh: expected argument to \"cd\"\n");
+  } else {
+    if (chdir(args[1]) != 0) {
+      perror(":)>");
+    }
+  }
+  return 1;
+}
+
+
+int fsh_help(char **args) {
+  int i;
+  printf("Flokshi's fsh\n");
+  printf("Type program names and arguments, and hit enter.\n");
+  printf("The following are built in:\n");
+
+  for (i = 0; i < fsh_num_builtins(); i++) {
+    printf("  %s\n", builtin_str[i]);
+  }
+
+  printf("Use the man command for information on other programs.\n");
+  return 1;
+}
+
+int fsh_exit(char **args)
+{
+  return 0;
+}
+
+
+
+
+int fsh_execute(char** args)
+{
+  int i;
+
+  if (args[0] == NULL) {
+    return 1;
+  }
+
+  for (i = 0; i < fsh_num_builtins(); i++) {
+    if (strcmp(args[0], builtin_str[i]) == 0) {
+      return (*builtin_func[i])(args);
+    }
+  }
+
+  return launch(args);
+}
+
+int main(int argc, char*argv[]){
+
+	
+	
+    // the whole idea is that the shell is nothing more than just a loop, looping around. 
+	fsh_loop(); 
+	return 0;
+}
+
+
+void fsh_loop(){
+
+	char* line;
+	char** args;
+	int status;
+
+
+	do {
+    		printf(":)>");
+    		line = read_line();
+    		args = parser(line);
+    		status = fsh_execute(args);
+
+		// free anything that it shouldn't be used. 
+    		free(line);
+    		free(args);
+        } while (status);
+
+
+}
+
+char* read_line(){
+
+	/*Note: EOF is an integer and to check it you should also compare it with an integer.*/
+	int buffer_size = FSH_READ_BUFFER;
+	int position = 0;
+	// a buffer of characters 
+	char* buffer = malloc(sizeof(char)* FSH_READ_BUFFER); // one byte * 1024 bytes 
+	int c;
+	// checking if malloc failed. // implemeting malloc using the sbrk() system call. 
+	if(!buffer){
+		fprintf(stderr, "Malloc Failed");
+	}
+
+	while (1) {
+		// probably the character comes from the parser 
+    		c = getchar(); // get char is of the type int and it is going to return an integer man getchar, so we can store it inside char and then hit it.
+
+		// EOF - if we are reading from the file, else if we are reading from the standard input 
+    		// If we hit EOF, replace it with a null character and return.
+    		if (c == EOF || c == '\n') {
+      			buffer[position] = '\0';// strings by default in c have the null characters 
+      			return buffer;
+    		} else {
+			// continuing feeding our buffer
+      			buffer[position] = c;
+    		}
+    		position++;
+
+		// sadly we do not know the length of the line that the user is going to be providing for us. 
+    		// If we have exceeded the buffer, reallocate.
+   		 if (position >= buffer_size) {
+     			buffer_size += FSH_READ_BUFFER;
+      			buffer = realloc(buffer, buffer_size);
+      			if (!buffer) {
+        			fprintf(stderr, "lsh: allocation error\n");
+        			exit(EXIT_FAILURE);
+      			};
+    		};			
+  	};
+
+	
+	return buffer;
+}
+
+char** parser(char* line){
+	// all of this can be eleminated using the strtok() function in the standard lib. 
+	int bufsize = FSH_BUFF_TOKEN, position = 0;
+  	char** tokens = malloc(bufsize * sizeof(char*)); // the size of a char* (8*64) = 512 bytes 
+  	char* token; // inside the buffer we are going to keep our pointers tokes. 
+
+  	if (!tokens) {
+    		fprintf(stderr, "fsh: allocation error\n");
+    		exit(EXIT_FAILURE);
+  	}
+
+	// here the usages of strtok
+  	token = strtok(line, FSH_DELIMETER);
+  	while (token != NULL) {
+    		tokens[position] = token;
+    		position++;
+
+		// we have more token than our buffer can fit, resize it 
+    		if (position >= bufsize) {
+      			bufsize += FSH_BUFF_TOKEN;
+      			tokens = realloc(tokens, bufsize * sizeof(char*));
+      			if (!tokens) {
+       				 fprintf(stderr, "fsh: allocation error\n");
+        			exit(EXIT_FAILURE);
+      			}
+    		}
+
+    		token = strtok(NULL, FSH_DELIMETER);
+  	}
+	// the last position of the token is going to be null?
+  	tokens[position] = NULL;
+
+	//returning tokens 
+  	return tokens;
+
+}
+
+int launch(char** args){
+
+	 pid_t pid, wpid;
+ 	 int status;
+
+ 	 pid = fork();
+  	if (pid == 0) {
+   
+		// here we load the program that a process would need to execute. 
+		// the name of the file and the name of the program
+		// variants of execvp 
+    		if (execvp(args[0], args) == -1) {
+      			perror(":)>");
+    		}
+    		exit(EXIT_FAILURE);
+  	} else if (pid < 0) {
+   		 // Error forking
+    		perror(":)>");
+  	} else {
+    		// Parent process
+    	do {
+     		 wpid = waitpid(pid, &status, WUNTRACED);
+    	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  };		
+
+  return 1;
+}
+```
+
+We start off with our initial loop `fsh_loop`, this is going to serve as the main logic of our programming.
+ 
+```
+void fsh_loop(){
+
+	char* line;
+	char** args;
+	int status;
+
+
+	do {
+    		printf("UwU\t");
+    		line = read_line();
+    		args = parser(line);
+    		status = fsh_execute(args);
+
+		// free anything that it shouldn't be used. 
+    		free(line);
+    		free(args);
+        } while (status);
+
+
+}
+
+```
+Inside the function we have declare 3 variables. The first one is a pointer to a character, the second one is a pointer to a pointer to an character./*I know C pointers can be really confusing but please bare with me*/, and the third one is an integer that is going to return the status.<br>
+
+The loop of our program is implemented using a `do_while` loop, rather than just a while loop. /*This is done so even if on failure, we get the chance to run the program once.*/
+Inside the loop, the first line is a standard printf function which would print theprompt symbol  of our shell. /*Do not judge please. I am passing a phase okay.*/
+
+<br>
+Next we read the line from the `read_line()` function. To interact with the shell we can write the following in the command prompt either a single word such as `ls` or a full line such as `gcc file.c - o file`. This is the idea behind the line.
+/*Another fun fact, is that every input from the stdin is actually a text, a string.*/
+We read args (arguments) from the parser function, which as an input take a line.<br>
+What is parsing? - Parsing is the process of taking a string(line) an breaking it down to smaller parts called tokens, which can then be interpreted into logical syntax. Analyse (a string or text) into logical syntactic components - from Wikipedia. 
+<br>
+
+**Why would we need to parse a string?** - Good question, and I have an even betteranswer for you. Refering to the above idea of a line, have you every thought why when we type `ls -a` we have a listing of all our files/directories even the hidden ones. How do the shell understand that `ls -a` is another thing and `ls -l` is another thing, that is when parsing comes in the play.<br>
+Parsing seperate the line argument that was given to us and break it down in smaller logically syntaticall correct parts. /*More when i actually write on a parser :).*/
+<br>
+
+And finally we get the pstatus from the `fsh_execute` function. The status will indicate if or not our shell will continue running, as seen in `while(status)`.<br>
+
+Since both line and args are pointers we would need to free them, that is why we are using free. /*You know that it is quite simple to implement malloc using sbrk() but free is a pain to do, since you would need to keep track of the memory allocated.*/
+
+<br>
+
+We continue the implementation of the three functions that we discussed early.
+Firslty `read_line()`.
+<br>
+This function is going to contain the logic on how we will be reading the lines (commands). Now it is quite important to do a distingushment, we can read the commands, from stdin or from a file. In our function, we take them both in consideration. 
+
+```
+char* read_line(){
+
+	int buffer_size = FSH_READ_BUFFER;
+	int position = 0;
+	// a buffer of characters 
+	char* buffer = malloc(sizeof(char)* FSH_READ_BUFFER); // one byte * 1024 bytes 
+	int c;
+	// checking if malloc failed. // implemeting malloc using the sbrk() system call. 
+	if(!buffer){
+		fprintf(stderr, "Malloc Failed");
+	}
+
+	while (1) {
+		// probably the character comes from the parser 
+    		c = getchar(); // get char is of the type int and it is going to return an integer man getchar, so we can store it inside char and then hit it.
+
+		// EOF - if we are reading from the file, else if we are reading from the standard input 
+    		// If we hit EOF, replace it with a null character and return.
+    		if (c == EOF || c == '\n') {
+      			buffer[position] = '\0';// strings by default in c have the null characters 
+      			return buffer;
+    		} else {
+			// continuing feeding our buffer
+      			buffer[position] = c;
+    		}
+    		position++;
+
+		// sadly we do not know the length of the line that the user is going to be providing for us. 
+    		// If we have exceeded the buffer, reallocate.
+   		 if (position >= buffer_size) {
+     			buffer_size += FSH_READ_BUFFER;
+      			buffer = realloc(buffer, buffer_size);
+      			if (!buffer) {
+        			fprintf(stderr, "lsh: allocation error\n");
+        			exit(EXIT_FAILURE);
+      			};
+    		};			
+  	};
+
+	
+	return buffer;
+}
+```
+The function will return a pointer to a character, and takes on no arguments. We will be storing the characters from either stdin or the file using a buffer, which is contain the size of `FSH_READ_BUFFER` macro which we defined at the begining of our line.
+We accquire memory for the buffer using `malloc`. Upon malloc fail we are going to print standard error, that the program failed. Upon malloc success
+we will be reading the characters from either `stdin` or a file, and to geteach character we will be using the `getchar()` function.
+
+/*Something that was quite interesting for me when i was reading the blog post was that EOF is actually an integer rather than a character*/
+
+<br>
+
+While the loop runs we are going to check each character. If we have arrivethe end of the file or a new line, we are, at that buffer poition putting a`\0`.To mark the end of a string in C we use the null byte :). /*I got roasted pretty bad on Stack Overflow for this, so be greateful*/ and then we return the buffer. Otherwise we feed the buffer at that position with the character and increment the positison.
+<br>
+Unfortunatly we do not know how long the line that our program would be reading is, so that is why we need to be careful, because malloc can fail. Upon that we will be reallocating more memory to the buffer using realloc. If that fail, we print the error and exit on `EXIT_FAILURE`. Once the line has all been read, we return our buffer. 
+
+<br>
+Now it is time to parse each of the characters that we read from the line. As mentioned above parsing is the process of converting a string in syntatically logical tokens.<br>
+
+Our parsing function is going to return a pointer to a char pointer and as parameters is going to accept a pointer to a character. The logic of our parseing function is the somewhat the same as the one that we used for the read_line function.<br>
+Here we also define a buffer and we set his size equal to the `FSH_BUFF_TOKEN` which we did define above.<br>
+
+As previously mentioned, we are going to seperate the line that we read from the stdin in tokens. (syntatically correct tokens).To do this we are going to be using the `strtok` function which based on `man` is defined as: `strtok() function breaks a string into a sequence of zero or nonempty tokens`The function accepts two parameters: the first one is the string that is going to seperate the tokens from and the second is the DELEMITER.<br>
+For our example,we have defined our delemiters on the `FSH_DELIMETER` macro, including a space, a tab, a new line, return to carry and an alert. Everything else is closer to what we did in the read_line function. Upon complere we return tokens.
+
+<br>
+
+Now we come to the part that, was the whole purpose of writing this project and learning about the shell : processes. Reading about processes and the way how they were invoked, made me want to explore this project.
+<br>
+For each line of command that we are writing in the stdin, a new process isgoing to be created. We create a process using the `fork()` sysem call. By
+man definition : **fork() creates a new process by duplicating the calling process. The new process is reffered to as the child process. The calling process is referred to as the parent process**.
+
+<br>
+On our example, of the launch function, which is going to accept as a parameter the token buffer the parent process is our shell, the fsh while the child is going to be the process which is going to be created invoking the fork() API. fork() on success is going to return the PID of the child processin the parent and 0 is return in the child. On failure, -1 is returned in the parent, and no child process is created, and an errorno is set to indicat the process.
+For this reason, after the creation of the child using fork(), we check if 
+`pid==0`, upon success we use another system call which is `execvp()`, which belong to a larg family of executable function, but in this example we use execvp(). The execvp/ exec() functions return ony if an error has accured, that is why if the return value is == to -1 we return a `perror(UwU)`, and exit on EXIT_FALIURE.
+
+<br>
+Something that we also need to also be caution when using processes is thata process after finishing his execution and it is not terminated by the parent becomes a zombie. *The definition on the dinosaur OS book, would be as the following: A process whose parent has not invok wait() is treated as a zombie, staying inside the OS whithout releasing its resources*.That is why to omitt that we invok the waitpid() system call, which  suspends execution of the calling thread until a child specified by pid argument has change status. By default waitpid() waits only for the terminated children, but since we hace used **WUNTRACED** it also return is a child hasstopped, and we continue to do this until it has read all the commands given using the stdin.
+ 
+```
+int launch(char** args){
+
+	 pid_t pid, wpid;
+ 	 int status;
+
+ 	 pid = fork();
+  	if (pid == 0) { 
+    		if (execvp(args[0], args) == -1) {
+      			perror("UwU");
+    		}
+    		exit(EXIT_FAILURE);
+  	} else if (pid < 0) {
+   		 // Error forking
+    		perror("UwU");
+  	} else {
+    		// Parent process
+    	do {
+     		 wpid = waitpid(pid, &status, WUNTRACED);
+    	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  };		
+
+  return 1;
+}
+```
+<h2>SHELL-Build-ins</h2>
+If we were to do a quick google search about the shell we would came to know that there are some build in features inside the shell, which we can use whithout the need to install or write ourselves, the come with the shell. For example `ls, man, cd ,mkdir, nano, touch ` etc, are buildin inside the shell. This is the same approach we will also we using with our shell.
+<br>
+The build ins that we will be using would be some standard ones like `cd, help and exit`.The idea of the code is quite self explanatory. 
+
+<br> We launch everything on the `fsh_execute` function. 
+
+Now it is the time for magic. We pres `esc :wq` to save the file, run it and the following is shown to us  
+
+`UwU`
+
+Okay till now without any errors, let us try to enter one of those build infunctions that we specified earlier. Let us try help:
+
+```
+UwU help
+Flokshi's fsh
+Type program names and arguments, and hit enter.
+The following are built in:
+  cd
+  help
+  exit
+Use the man command for information on other programs.
+```
+Let us try something that is not a buld in function, for example mkdir
+
+```
+UwU mkidr
+:)>: No such file or directory
+
+```
+Let us try to exit now, we exit the shell. 
+<br>
+So yeah, this is pretty much anything that I build in my very simple shell, using the tutorial specified in the beginning. Somwhere in the futurei would have to also include other functionalities as well, and why not make it a good using shell. Till then bye!
+                                                Flokshi :)
+
+*Something really interested that I lerned in Internet By @rebane2001: Every file falls inside one of the two categories : A text file or a .zip file, and i thought it waspretty cool i guess.*
+
+
+</p>
