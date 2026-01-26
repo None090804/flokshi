@@ -1,4 +1,4 @@
-**Note: The lines of code in this documentation is not mine, it has been reproduced following the book "Hands On Network Programming in C" by Lewis Van Wrikle which you can fork/copy from [https://github.com/codeplea/Hands-On-Network-Programming-with-C](Hand_On_Network_Programming_with_C). Here would be a simple explanation, on what I learned following this book. Enjoy :)**
+**Note: The lines of code in this documentation is not mine, it has been reproduced following the book "Hands On Network Programming in C" by Lewis Van Wrikle which you can fork/copy from [https://github.com/PacktPublishing/Hands-On-Network-Programming-with-C](Hand_On_Network_Programming_with_C). Here would be a simple explanation, on what I learned following this book. Enjoy :)**
 
 In the previous blog series, we answered what TCP was, and how TCP  was used to transport data from one point of communication to another point over the internet. Previously we used a remote server to exchange data between nodes, while here we aim at using a local one, essentially, we're building our own little corner of the internet. 
 (Sounds fancy, it is)
