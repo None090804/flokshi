@@ -7,3 +7,4 @@ Here I would share many interesting things about the computer, also different th
 -  [writing_your_own_shell](writing_your_own_shell)
 -  [client_sever_architecture](client_sever_architecture)
 -  [just_random_thoughts](just_random_thoughts)
+-  [hardware_stuff](hardware_stuf)
