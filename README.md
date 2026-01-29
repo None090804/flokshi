@@ -7,6 +7,7 @@ Hello Random Reader of the internet, my name (internet name) is **Flokshi** and 
 -  Master student in Information Security (Fancy, I know)
 - Love to do research about anything that you can think off.
 - A huge languages nerd (learning my third)
+  - Fun Fact: Have a 1703 day streak in Duolingo
 - Every night I go down to sleep, hoping that In the morning I will wake up to be like the nerds on the internet, which is cool I guess. 
 
 
