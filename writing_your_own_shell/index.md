@@ -657,20 +657,4 @@ So yeah, this is pretty much everything that I built in my very simple shell, us
 
 ---
 
-## Key Takeaways
-
-1. **A shell is just a loop** - Read, parse, execute, repeat
-2. **Processes are created with fork()** - The child inherits from the parent
-3. **execvp() replaces the process** - The child becomes the new program
-4. **Built-ins are handled differently** - They run in the shell process, not in a child
-5. **Memory management is crucial** - Always free what you malloc
-6. **NULL-terminated arrays matter** - Functions like execvp() expect them
-
-This project taught me the fundamentals of:
-- Process management in Unix
-- System calls (fork, exec, wait)
-- Memory management in C
-- Parsing and tokenization
-- The architecture of command-line interfaces
-
-Happy shell hacking! 🐚
+`Flokshi :)`
