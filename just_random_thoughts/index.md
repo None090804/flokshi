@@ -40,6 +40,6 @@ This morning I came across the following blog: https://www.tomshardware.com/soft
 The community is old, but strong. 
 Another funny thing in the post was that the `bus factor` was still present. A weird obsession does the community have with buses, but hey. As long as there is an open source project, there will also be a community to support it, that is the beauty
 
- ` Flokshi :) `
+ `Flokshi :)`
 
 

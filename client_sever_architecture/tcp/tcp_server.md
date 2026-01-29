@@ -411,9 +411,9 @@ To test this server, you can:
    HELLO WORLD
    ```
 
-5. **Connect multiple clients simultaneously** to see `select()` in action!
+**Connect multiple clients simultaneously** to see `select()` in action!
 
-6. **Enjoy**.
+**Enjoy**.
 
 
 ### Note
