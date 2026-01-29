@@ -1,6 +1,6 @@
 # Random Thoughts
 
-*Disclamer: This section of the blog, is designed just for fun and fun only.It is my space to share things I find interesting and funny. Strongly recommand to visit the links that are attached to the secttions, and hope you have fun :)*
+*Disclamer: This section of the blog, is designed just for fun and fun only. It is my space to share things I find interesting and funny. Strongly recommand to visit the links that are attached to the sections, and hope you have fun :)*
 
 ## The nerds community has a backup plan in case Linus Torvalds gets run over by a bus.
 
@@ -15,6 +15,7 @@ Yeah 35 years later, and 2026 is the year of Linux in Desktop, since you know.. 
 
 
 <img src="../images/Linus_Email.jpeg"/>
+
 *Note: Image is not mine. It was reproduced from:  https://fossbytes.com/linus-torvaldss-famous-email-first-linux-announcement/.
 
 > MINIX is a Unix-like operating system based on a microkernel architecture, first released in 1987 and written by American-Dutch computer scientist Andrew S. Tanenbaum. It is a predecessor of Linux. - Wikipedia 

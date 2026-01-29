@@ -1,21 +1,22 @@
-**Note: The lines of code in this documentation is not mine, it has been reproduced following the book "Hands On Network Programming in C" by Lewis Van Wrikle which you can fork/copy from [https://github.com/codeplea/Hands-On-Network-Programming-with-C](Hand_On_Network_Programming_with_C).Here would be a simple explanation, on what I learned following this book. Enjoy :)**
+**Note: The lines of code in this documentation is not mine, it has been reproduced following the book "Hands On Network Programming in C" by Lewis Van Wrikle which you can fork/copy from [https://github.com/codeplea/Hands-On-Network-Programming-with-C](Hand_On_Network_Programming_with_C). Here would be a simple explanation, on what I learned following this book. Enjoy :)**
 
 
 ## What is TCP?
 
-I think that the best way to start this blog, would be to firstly answer what is TCP, and why is it important for us to learn it?
+I think that the best way to start this blog, would be to firstly answer what TCP is, and why is it important for us to learn it?
+
 Based on CISCO PRESS TCP can be determined as the following: `TCP (Transmission Control Protocol) is a connection oriented protocol, which is assigned to the Transportation Layer in both OSI model and the TCP/IP model, used to transmitt, data frames (which here are known as packets) from one point of communication to another`
 
-Pretty straightforward definition if you ask me. So it is a transportation layer protocol, and we will be using this protocol to transport our packets. How we will be doing this, well through creating a `tcp_client` and a `tcp_server` duh, so let us get started with it. 
+Pretty straightforward definition if you ask me. So it is a transportation layer protocol, and we will be using this protocol to transport our packets. How we will be doing this, well through creating a `tcp_client` and a `tcp_server` , so let us get started with it. 
 
 
 ## Geeting our Hands Dirty 
 
 The whole idea of the project is to give us a better understanding on how tcp client works, so not really anything fancy, just a simple functional tcp client. This tcp client will take in a hostname (or IP address) and a service (or a port number) as arguments from the command line. It will attempt a connection to the TCP server at that address. If successul , it will relay data that's recieved from the server to the terminal and data inputted into the terminal to the server. It will continue until either it is terminated  ( with using the famous CTRL+C) or the server closes the connection. 
 
-The flow that our tcp_client is going to follow is displayed in figure 1. 
+The flow that our tcp_client is going to follow is displayed in Figure 1. 
 
-[images/figure_1](figure_1)
+<img src="../../images/TCP_CLIENT_FLOW.jpeg"/>
 
 *Note: This diagram was reproduced by Lewis Van Winkel book Hands On Network Programming with C, all credits to the original author*
 
@@ -95,7 +96,8 @@ The whole puropse of the tcp_client is to be connected to a tcp server that is w
 To be fair the number of times I have seen this function, while trying to learn networking would be quite overwhelming, and all that for the right reasons. Following my first 'bible' definition, that being man (the second one beign : Ghost in the wired by kevin Mitnic and the third being the most well known books among wannabes-> Hacking: The art of Explotation, if you want to be a wannabe and you don't have this, i strongly suggest you to take it).
 Back to the defenition of `getaddrinfo()` based on man: **Given node (host/IP_address) and service/port_number, which identify an Internet host and service, getaddrinfo() returns one or more addrinfo structures, each of which contains an Internet address that can be specified in a call to bind() or connect()**
 
-Huh, what is a addrinfo structure? Well a very important structure in networking. addrinfo struct contains important information related to internet addresses. It would look something as the following.
+Huh, what is a addrinfo structure? Well a very important structure in networking. `addrinfo struct contains important information related to internet addresses.`
+It would look something as the following.
 
 ```
 struct addrinfo {
@@ -169,9 +171,6 @@ The line terminal in windows, would be made using _kbhit()_ function, to referin
 
 For Unix-based operating systems, we use fgets to read the command-line input. If this input is ready, we send it over to the server using send.
 If a key interrupt such as Ctrl+C or connection is closed, than we quite the while loop and print closing socket... and finished. On windows we do not forget to WSACleanup the socket. 
-
-
-
 
 ## Running our program
 

@@ -1,7 +1,6 @@
-**Note: The lines of code in this documentation is not mine, it has been reproduced following the book "Hands On Network Programming in C" by Lewis Van Wrikle which you can fork/copy from [https://github.com/PacktPublishing/Hands-On-Network-Programming-with-C](Hand_On_Network_Programming_with_C). Here would be a simple explanation, on what I learned following this book. Enjoy :)**
+**Note: The lines of code in this documentation is not mine, it has been reproduced following the book "Hands On Network Programming in C" by Lewis Van Wrikle which you can fork/copy from [Hand_On_Network_Programming_with_C](https://github.com/PacktPublishing/Hands-On-Network-Programming-with-C). Here would be a simple explanation, on what I learned following this book. Enjoy :)**
 
-In the previous blog series, we answered what TCP was, and how TCP  was used to transport data from one point of communication to another point over the internet. Previously we used a remote server to exchange data between nodes, while here we aim at using a local one, essentially, we're building our own little corner of the internet. 
-(Sounds fancy, it is)
+In the previous blog series, we answered what TCP was, and how TCP  was used to transport data from one point of communication to another over the internet. Previously we used a remote server to exchange data between nodes, while here we aim at using a local one, essentially, we're building our own little corner of the internet.(Sounds fancy, it is)
 
 ## Getting Started: The Concept of a Server
 
@@ -9,27 +8,29 @@ The concept of a server, like any other computer, said simply is nothing fancy. 
 
 `A server is a computer that provides information to other computers called "clients" on a computer network` - Wikipedia. 
 
-The server is an actor of what is known as the client-server architecture. In figure 1.1 is a brief description of how conceptually we can think of the client and server relationship.
+The server is an actor of what is known as the client-server architecture. In Figure 3 is a brief description of how conceptually we can think of the client and server relationship.
 
-<img src='../images/drwaing1'>
+<img src='../../images/Client-Server Drawing .jpeg'>
+
 *Note: This is my own drawing, however you are free to adjust it to your likings*
 
-From one part of the schema, you have my computer (FLokshi's thinkpad :)) which in this scenario is the client. Now, let me be clear: my computer is not actually the client,it's the hardware part. What is the real client is, for example, your web browser. Say Chrome, which I use.*I would use Firefox, but can't because my memory crashes once a tab is opened.*
-But pro tip: use Firefox in the winter,the amount of RAM it consumes is going to warm you continuously, better than any space heater.
+From one part of the schema, you have my computer (FLokshi's thinkpad :)) which in this scenario is the client. Now, let me be clear: my computer is not actually the client,it's the hardware part. What is the real client is, for example, your web browser. Say Chrome, which I use.
+*I would use Firefox, but can't because my memory crashes just by the thought of it. If you know, you know. But pro tip: use Firefox in the winter,the amount of RAM it consumes is going to warm you continuously, better than any space heater.*
 
 From the other side you have the server. The idea is quite simple: I open my web client (Chrome) and write the following URL to the search bar: `https://flokshi.github.io/flokshi` and hit enter. 
 
 **What just happened behind the scenes?**
 
-1. My client (Chrome) resolved the domain name `flokshi.github.io` to an IP address using DNS (Domain Name System) 
-2. My computer established a TCP connection to the server (remember the three-way handshake from the previous blog?)
+1. My client (Chrome) resolved the domain name `flokshi.github.io` to an IP address using DNS (Domain Name System) *Irrelevant to the idea, but it is really interesting how in 2008, a DNS flaw was discovered by Dan Kaminsky, which could potentially break the whole internet Suggest reading it just for fun :|* 
+2. My computer established a TCP connection to the server (A three-way handshake)
 3. Chrome sent an HTTP GET request for the resource `/flokshi` from the host `flokshi.github.io`
 4. The server processed this request and prepared a response
 
-To demonstrate this, we made a request to the site from a Chrome browser (doesn't really matter which browser) and intercepted the traffic using Burp Suite. The whole request header is displayed in figure 2.
+To demonstrate this, we made a request to the site from a Chrome browser (doesn't really matter which browser) and intercepted the traffic using Burp Suite. The whole request header is displayed in Figure 3.
 
-<img src='../images/burp_suit_request.jpg'> 
-*Note: Screenshot taken from me*
+<img src='../../images/Burpsuit Intercept .jpeg'>
+
+*Note: Screenshot taken by me*
 
 The request made was a GET request, meaning that we are telling the server: "Hey buddy, I want to GET the following resource from you, please and thank you." What the server gives to us is the response, and the response (res for short) can be part of a group of categories called response status codes. 
 
@@ -41,22 +42,18 @@ The request made was a GET request, meaning that we are telling the server: "Hey
 
 Have fun exploring them: [response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status)
 
-If the response is of the 200 code class, meaning that everything went well with our request, the server sends back the file we are looking for. In our case, it would be the HTML, CSS, and JavaScript that make up my beautiful (debatable) website.
+If the response is of the 200 code class, meaning that everything went well with our request, the server sends back the file we are looking for. In our case, it would be the HTML, CSS, and JavaScript that make up my beautiful and amaizing website.
 
-## History of Servers
-
-Blank, due to not enough information gathered. (I promise to fill this in eventually... maybe... if I remember... probably not.)
 
 ## Getting Our Hands Dirty
 
 I will start with the following image:
 
-<img src='../images/monotholic_to_microservices'>
+<img src='../../images/Monotholic_to_Microservice.jpeg'>
+
 *Note: The image is not mine. It was reproduced from the user @PR0GRAMMERHUM0R on X. ALL the rights reserved to the original author*
 
-So yeah, as the picture suggests, the nerds on the internet replaced a well-fine designed architecture as monolithic (such as the LinuxKernel) with microservices. 
-
-(Note: In our school paper, me and my partner explained how software reengineering was done through microservices. Check it out if you are interested: [software-reengineering-paper](../../software-reengineering/software-reengineering.doc))
+So yeah, as the picture suggests, the nerds on the internet replaced a well-fine designed architecture as monolithic (such as the Linux Kernel) with microservices. 
 
 But yeah, since 2014, and because of massive adoption from companies such as Google, Amazon, Netflix, etc., microservices have become quite popular. 
 
@@ -89,7 +86,8 @@ This will serve as a very basic microservice. For our microservice to be useful,
 
 The flow of how our program is going to work is shown in the picture below:
 
-<img src="../images/server_flow.jpg">
+<img src="../../images/TCP_SERVER_FLOW.jpeg">
+
 *Note: The image is being reproduced from the book Hands-on-network-programming-with-C by Lewis Van Wrikle. All rights reserved to the author*
 
 The image above is pretty much as standard as the one that we used to create the TCP client, but with some key differences:
@@ -103,15 +101,13 @@ The image above is pretty much as standard as the one that we used to create the
 7. **Read/Write data** - Handle requests from connected clients
 
 Notice how we use `select()` to handle incoming connections rather than using `accept()` immediately. We first use `select()` to monitor which sockets are ready for I/O, and only when it's a new connection do we accept it by using `accept()`.
-
-**Why use select()?**
 Without `select()`, we would either:
 - Block on `accept()` waiting for new connections (can't handle existing clients)
 - Block on `recv()` waiting for data from a client (can't accept new connections)
 
 With `select()`, we can monitor all sockets at once and handle whichever is ready first. It's like having multiple eyes watching multiple doors simultaneously.
 
-(Note: Please refer to man for more information regarding the different between them. Be sure to always use man, its quite helpful)
+(*Note: Please refer to `man` for more information regarding the different between them. Be sure to always use `man`, its quite helpful*)
 
 ## The Code Breakdown
 
@@ -126,19 +122,7 @@ The code for the server is quite straightforward. Let's break it down step by st
 
 We start by including "chap03.h" header file (or whatever you've renamed it to), and also including the `<ctype.h>` header file. 
 
-**What is ctype.h?**
 Based on Google: `ctype.h` (or `<cctype>` in C++) is a C standard library header providing functions to classify and transform single characters. It's incredibly useful for checking if a character is a digit, letter, whitespace, or converting it between uppercase and lowercase. This improves code readability and portability by abstracting ASCII value checks.
-
-**Key functions:**
-- `isalnum()` - checks if alphanumeric
-- `isalpha()` - checks if alphabetic
-- `isdigit()` - checks if digit
-- `islower()` - checks if lowercase
-- `isupper()` - checks if uppercase
-- `isspace()` - checks if whitespace
-- `tolower()` - converts to lowercase
-- `toupper()` - converts to uppercase ← **This is our star!**
-
 This library is what we're going to use to provide our microservice functionality.
 
 ### Configuring the Local Address
@@ -156,13 +140,11 @@ getaddrinfo(0, "8080", &hints, &bind_address);
 
 We handle the creation of the Windows socket (if we operate on Windows) and then we configure our local address. Pretty standard stuff, the same as what we used when we made the TCP client, but with crucial differences:
 
-**Breaking down the configuration:**
+1. `hints.ai_family = AF_INET` - We specify IPv4 (not IPv6). Read `man getaddrinfo` for more information on address families.
 
-1. **`hints.ai_family = AF_INET`** - We specify IPv4 (not IPv6). Read `man getaddrinfo` for more information on address families.
+2. `hints.ai_socktype = SOCK_STREAM` - We want the type of our socket to be TCP. This ensures reliable, ordered, connection-oriented communication, and make our server be the TCP server we need. 
 
-2. **`hints.ai_socktype = SOCK_STREAM`** - We want the type of our socket to be TCP. This ensures reliable, ordered, connection-oriented communication, and make our server be the TCP server we need. 
-
-3. **`hints.ai_flags = AI_PASSIVE`** - This is the key difference from the client! According to man page:
+3. `hints.ai_flags = AI_PASSIVE` - This is the key difference from the client. According to man page:
    > "If the AI_PASSIVE flag is specified in hints.ai_flags, and node is NULL, then the returned socket address will be suitable for binding a socket that will accept connections."
    
    In short: the socket that is going to be returned to us will be able to use `bind()` and `accept()`.
@@ -173,8 +155,8 @@ When we were working with `tcp_client`, we didn't really set anything regarding 
 > "If the AI_PASSIVE flag is not set in hints.ai_flags, then the returned socket addresses will be suitable for use with connect(), sendto(), or sendmsg()."
 
 And indeed:
-- **TCP Client**: Wants a remote connection → uses `connect()`
-- **TCP Server**: Wants a local binding → uses `bind()` and `accept()`
+- **TCP Client**: Wants a remote connection  uses `connect()`
+- **TCP Server**: Wants a local binding  uses `bind()` and `accept()`
 
 *To be honest, while I was reading about the tcp_client, I couldn't really pinpoint why we weren't using bind(), but then the book and Google explained it. The client doesn't need to bind because the OS automatically assigns it an ephemeral port when it calls connect().The server needs bind() because it must listen on a specific, well-known port that clients know about.*
 
@@ -199,7 +181,6 @@ freeaddrinfo(bind_address);
 
 After configuring the local address, we create our socket, pretty standard. Then, in the same way that we used `connect()` in the client, we use `bind()` to bind the socket to a local address.
 
-**What does bind() do?**
 Based on man:
 > "When a socket is created with socket(), it exists in a name space (address family), but has no address assigned to it. bind() assigns the address specified by addr to the socket referred to by the file descriptor sockfd (or in our case, socket_listen). Traditionally, this operation is called 'assigning a name to a socket'."
 
@@ -207,15 +188,7 @@ Based on man:
 ```c
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 ```
-
-**Return value:**
-- On success: zero is returned
-- On error: -1 is returned and `errno` is set to indicate the error
-
-**Common bind() errors:**
-- `EADDRINUSE` - The port is already in use by another program
-- `EACCES` - Permission denied (trying to bind to port < 1024 without root)
-- `EINVAL` - Socket is already bound to an address
+On success: zero is returned. On error: -1 is returned and `errno` is set to indicate the error
 
 Think of `bind()` like reserving a specific table at a restaurant. You're telling the OS: "This port is mine, send all traffic to this port to me."
 (Note: The OS is just wonderful, isn't it)
@@ -232,7 +205,7 @@ if (listen(socket_listen, 10) < 0) {
 Only when we have successfully bound our socket to a local address do we move on to listening for connections.
 
 **What does listen() do?**
-The `listen()` function marks the socket as a passive socket—one that will be used to accept incoming connection requests using `accept()`.
+The `listen()` function marks the socket as a passive socket, one that will be used to accept incoming connection requests using `accept()`.
 
 The second parameter (10 in our case) is the **backlog**, it defines the maximum length to which the queue of pending connections may grow. If a connection request arrives when the queue is full, the client may receive an error like `ECONNREFUSED`.
 
@@ -250,16 +223,8 @@ SOCKET max_socket = socket_listen;
 
 All the connection file descriptors are going to be stored inside an `fd_set` named `master`, in which, after we zero it out, we're going to put all of our active sockets. We also keep a `max_socket`, which is initially going to be set to our listening socket's file descriptor.
 
-**What is fd_set?**
 `fd_set` is a data structure that represents a set of file descriptors. Think of it as a bit array where each bit represents whether a file descriptor is included in the set or not.
 
-**Key macros for fd_set:**
-- `FD_ZERO(&set)` - Clear all entries from the set (initialize it)
-- `FD_SET(fd, &set)` - Add a file descriptor to the set
-- `FD_CLR(fd, &set)` - Remove a file descriptor from the set
-- `FD_ISSET(fd, &set)` - Check if a file descriptor is in the set
-
-**Why track max_socket?**
 The `select()` function needs to know the highest-numbered file descriptor to check. We keep track of this so we don't waste time checking file descriptors that don't exist.
 
 ### The Main Loop
@@ -276,25 +241,20 @@ while(1) {
         return 1;
     }
     
-    // ... handle ready sockets ...
 }
 ```
 
 We then print a status message `printf("Waiting for connections...\n")`, enter the main loop, and wait for connections. The loop is obviously going to be looping forever, until either of the peers close the connection or you hit Ctrl+C (which sends SIGINT to our process, but that's a topic for another blog).
 
-**Why copy master to reads?**
-We copy the master content into another `fd_set` called `reads`. This is crucial! As explained in the book, if we use `select()` directly on `master`, we're going to modify its values. 
+We copy the master content into another `fd_set` called `reads`. This is crucial. As explained in the book, if we use `select()` directly on `master`, we're going to modify its values. 
 
-**What does select() do?**
 `select()` modifies the fd_set you pass to it, clearing out all the file descriptors that are NOT ready and leaving only the ones that ARE ready. So if we passed `master` directly, we'd lose track of all our sockets! By copying `master` to `reads` first, we preserve ourlist of all connected sockets.
 
-**Function signature:**
 ```c
 int select(int nfds, fd_set *readfds, fd_set *writefds, 
            fd_set *exceptfds, struct timeval *timeout)
 ```
 
-**Parameters:**
 - `nfds` - The highest-numbered file descriptor + 1
 - `readfds` - File descriptors to check for reading
 - `writefds` - File descriptors to check for writing (we pass 0/NULL)
@@ -307,18 +267,13 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
 SOCKET i;
 for(i = 1; i <= max_socket; ++i) {
     if (FD_ISSET(i, &reads)) {
-        // This socket is ready for I/O
     }
 }
 ```
-
 We now loop through each possible socket and see whether it was flagged by `select()` as being ready. If the socket `i` was flagged by select, then `FD_ISSET(i, &reads)` is true. (This `isset` reminds me of the function in PHP—pretty nice consistency across languages!)
 
 **Something to remember** as mentioned in the book: `FD_ISSET()` is only true for sockets that are ready to be read. 
 
-**What "ready to be read" means depends on the socket type:**
-- For `socket_listen`: A new connection is ready to be established with `accept()`
-- For client sockets: Data is ready to be read with `recv()`
 
 ### Accepting New Connections
 
@@ -356,15 +311,14 @@ If the ready socket is `socket_listen`, then we `accept()` the connection. This 
 2. The client's address information is filled into `client_address`
 3. The new socket is returned (or INVALID_SOCKET on error)
 
-**Important:** The original `socket_listen` continues listening for new connections. The new `socket_client` is used for communication with this specific client. This is how we can handle multiple clients simultaneously—each gets their own socket!
+The original `socket_listen` continues listening for new connections. The new `socket_client` is used for communication with this specific client. This is how we can handle multiple clients simultaneously—each gets their own socket!
 
 **After accepting, we must:**
 1. Add the new client socket to the `master` set with `FD_SET()`
 2. Update `max_socket` if this new socket has a higher file descriptor number
 3. Optionally, log the client's address using `getnameinfo()`
 
-**About getnameinfo():**
-This function converts a socket address to a human-readable string. We pass `NI_NUMERICHOST` flag to get the IP address as a number (like "192.168.1.100") rather than attempting a reverse DNS lookup (which could block and is slower).
+`This function converts a socket address to a human-readable string. We pass `NI_NUMERICHOST` flag to get the IP address as a number (like "192.168.1.100") rather than attempting a reverse DNS lookup (which could block and is slower).`
 
 ### Handling Client Data
 
@@ -388,29 +342,23 @@ else {
 ```
 
 If the socket is NOT `socket_listen`, then it's a request from an already established client connection. In this case, we need to:
+We create a buffer of 1024 bytes and receive data into it.
 
-1. **Read the data with recv()**: We create a buffer of 1024 bytes and receive data into it.
-
-2. **Check for disconnection**: If `recv()` returns a value less than 1, it means:
+If `recv()` returns a value less than 1, it means:
    - 0: The client has performed an orderly shutdown
    - -1: An error occurred
-   
-   In either case, we clean up:
-   - `FD_CLR(i, &master)` - Remove the socket from our master set
-   - `CLOSESOCKET(i)` - Close the socket and free its resources
-   - `continue` - Skip to the next socket
 
-3. **Process the data**: This is where our microservice magic happens! We loop through each received byte and convert it to uppercase using `toupper()` from `ctype.h`.
+
+**Process the data**: This is where our microservice magic happens! We loop through each received byte and convert it to uppercase using `toupper()` from `ctype.h`.
 
    ```c
    for (j = 0; j < bytes_received; ++j)
        read[j] = toupper(read[j]);
    ```
 
-4. **Send the response back**: We use `send()` to transmit the uppercased data back to the client. Notice we send exactly `bytes_received` bytes—not 1024. We only send the data we actually received.
+We use `send()` to transmit the uppercased data back to the client. Notice we send exactly `bytes_received` bytes, not 1024. We only send the data we actually received.
 
-**Why toupper() for each character?**
-The `toupper()` function works on individual characters. If you pass it a lowercase letter ('a'-'z'), it returns the uppercase equivalent ('A'-'Z'). If you pass it anything else (numbers, uppercase letters, symbols), it returns the character unchanged. This makes it perfect for our use case!
+The `toupper()` function works on individual characters. If you pass it a lowercase letter ('a'-'z'), it returns the uppercase equivalent ('A'-'Z'). If you pass it anything else (numbers, uppercase letters, symbols), it returns the character unchanged. Perfect :)
 
 **Flow example:**
 ```
@@ -436,51 +384,43 @@ return 0;
 
 When the server finally exits (which in our infinite loop would only happen with Ctrl+C, unless we add signal handling), we clean up resources:
 
-1. Close the listening socket
-2. On Windows, call `WSACleanup()` to release Windows socket resources
-3. Print a friendly goodbye message
+Close the listening socket. On Windows, call `WSACleanup()` to release Windows socket resources. Print a friendly goodbye message
 
 ## Testing the Server
 
 To test this server, you can:
 
-1. **Compile and run the server:**
+**Compile and run the server:**
    ```bash
    gcc -o tcp_server tcp_server.c
    ./tcp_server
    ```
 
-2. **Connect with telnet from another terminal:**
+**Connect with telnet from another terminal:**
    ```bash
    telnet localhost 8080
    ```
 
-3. **Type something and press Enter:**
+**Type something and press Enter:**
    ```
    hello world
    ```
 
-4. **See the response:**
+**See the response:**
    ```
    HELLO WORLD
    ```
 
 5. **Connect multiple clients simultaneously** to see `select()` in action!
 
-## What We Learned
-
-Through building this simple TCP server, we learned:
-
-1. **Server socket lifecycle**: bind() → listen() → accept() → recv()/send() → close()
-2. **The difference between client and server sockets**: Clients connect(), servers bind() and accept()
-3. **Handling multiple connections efficiently**: Using select() to monitor multiple sockets without threads
-4. **The fd_set data structure**: How to track and manage multiple file descriptors
-5. **Creating a basic microservice**: A simple but functional networked service
-6. **Socket cleanup**: Properly closing sockets and removing them from our tracking sets
+6. **Enjoy**.
 
 
+### Note
 
-Now go forth and build your own microservices! May your connections be stable and your buffers never overflow. 
+So as you have come so far, I will assume that you liked the explanation :). I suggest to read the book. Is quite nice. (Together with the CISCO Networking Handbook and Internet), we will be unstopable. 
+
+`Flokshi :)`
 
 ---
 
